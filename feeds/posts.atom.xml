@@ -1252,10 +1252,10 @@ h6:hover .anchor-link {
 
 
 
-&lt;div id="4ef033f3-377c-4843-8fa4-0c7696c3bf6c"&gt;&lt;/div&gt;
+&lt;div id="4a58a75c-0397-433e-8c0d-cb9424ca62a7"&gt;&lt;/div&gt;
 &lt;div class="output_subarea output_javascript "&gt;
 &lt;script type="text/javascript"&gt;
-var element = $('#4ef033f3-377c-4843-8fa4-0c7696c3bf6c');
+var element = $('#4a58a75c-0397-433e-8c0d-cb9424ca62a7');
 
 (function(root) {
   function now() {
@@ -1789,7 +1789,7 @@ var element = $('#4ef033f3-377c-4843-8fa4-0c7696c3bf6c');
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;
-</content><category term="python bokeh"></category></entry><entry><title>Post about bokeh</title><link href="https://alexkimxyz.github.io/bokeh-post.html" rel="alternate"></link><published>2018-11-25T00:00:00-05:00</published><updated>2018-11-25T00:00:00-05:00</updated><author><name>Alexander Kim</name></author><id>tag:alexkimxyz.github.io,2018-11-25:/bokeh-post.html</id><summary type="html">&lt;p&gt;My first post, read it to find out.&lt;/p&gt;</summary><content type="html">&lt;style type="text/css"&gt;/*!
+</content><category term="python"></category><category term="bokeh"></category><category term="visualizations"></category></entry><entry><title>Post about bokeh</title><link href="https://alexkimxyz.github.io/bokeh-post.html" rel="alternate"></link><published>2018-11-25T00:00:00-05:00</published><updated>2018-11-25T00:00:00-05:00</updated><author><name>Alexander Kim</name></author><id>tag:alexkimxyz.github.io,2018-11-25:/bokeh-post.html</id><summary type="html">&lt;p&gt;My first post, read it to find out.&lt;/p&gt;</summary><content type="html">&lt;style type="text/css"&gt;/*!
 *
 * IPython notebook
 *
@@ -3042,10 +3042,10 @@ h6:hover .anchor-link {
 
 
 
-&lt;div id="ad7abeae-8b55-4c6a-a3e3-9cd691081dc2"&gt;&lt;/div&gt;
+&lt;div id="6ff183a1-ef49-4c95-b258-29e7569f7a43"&gt;&lt;/div&gt;
 &lt;div class="output_subarea output_javascript "&gt;
 &lt;script type="text/javascript"&gt;
-var element = $('#ad7abeae-8b55-4c6a-a3e3-9cd691081dc2');
+var element = $('#6ff183a1-ef49-4c95-b258-29e7569f7a43');
 
 (function(root) {
   function now() {
@@ -3512,4 +3512,4 @@ var element = $('#ad7abeae-8b55-4c6a-a3e3-9cd691081dc2');
     (document.body || document.getElementsByTagName('head')[0]).appendChild(mathjaxscript);
 }
 &lt;/script&gt;
-</content><category term="python bokeh"></category></entry></feed>
+</content><category term="python"></category><category term="bokeh"></category></entry></feed>
