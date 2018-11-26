@@ -3,8 +3,8 @@
 from __future__ import unicode_literals
 
 AUTHOR = 'Alexander Kim'
-SITENAME = 'All things Data Science'
-SITEURL = '' 
+SITENAME = "Alex Kim's Blog"
+SITEURL = 'http://alexkimxyz.github.io'
 
 PATH = 'content'
 
@@ -20,19 +20,23 @@ AUTHOR_FEED_ATOM = None
 AUTHOR_FEED_RSS = None
 
 # Blogroll
-LINKS = (('Pelican', 'http://getpelican.com/'),
-         ('Python.org', 'http://python.org/'),
-         ('Jinja2', 'http://jinja.pocoo.org/'),
-         ('You can modify those links in your config file', '#'),)
+# LINKS = (
+# 			('LinkedIn', 'https://www.linkedin.com/in/alexkimxyz'),
+# 			('Github', 'https://github.com/alexkimxyz'),
+# 			('Twitter', 'https://twitter.com/alexkimxyz'),
+# 		)
 
 # Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
+SOCIAL = (
+			('LinkedIn', 'https://www.linkedin.com/in/alexkimxyz'),
+			('Github', 'https://github.com/alexkimxyz'),
+			('Twitter', 'https://twitter.com/alexkimxyz'),
+		)
 
 DEFAULT_PAGINATION = 3
 
 # Uncomment following line if you want document-relative URLs when developing
-#RELATIVE_URLS = True
+RELATIVE_URLS = True
 MARKUP = ('md', 'ipynb')
 
 PLUGIN_PATHS = ['./plugins']
@@ -41,3 +45,4 @@ PLUGINS = ['ipynb.markup']
 # if you create jupyter files in the content dir, snapshots are saved with the same
 # metadata. These need to be ignored. 
 IGNORE_FILES = [".ipynb_checkpoints"]  
+THEME = './theme/pelican-simplegrey'
