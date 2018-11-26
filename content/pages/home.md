@@ -1,4 +1,4 @@
-Title: The Blog of Alex Kim: data scientist by day, sleeping by night
+Title:The Blog of Alex Kim: data scientist by day, sleeping by night
 URL:
 save_as: index.html
 
