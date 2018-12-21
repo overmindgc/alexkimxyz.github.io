@@ -1,6 +1,5 @@
-Title:The Blog of Alex Kim: data scientist by day, sleeping by night
+Title: data science by day, sleeping by night
 URL:
 save_as: index.html
 
-Thank you for visiting.
-All my post can be found [here]({category}posts)
+The list of all posts can be found here [here]({category}posts)
