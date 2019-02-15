@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="">	
+<head>
+	<meta charset="utf-8"/>
+	<title>Set up Data Science workflow on AWS using EFS and EC2 - Alex Kim's Blog</title>	
+	<meta name="author" content="Alexander Kim">
+	
+
+	<meta name="description" content="What is this tutorial about? This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control. It assumes you are familiar (at least …">
+
+
+	<link rel="top" href="#" /><link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic|Source+Code+Pro' rel='stylesheet' type='text/css'></link>
+	<link rel="stylesheet" href="https://alexkimxyz.github.io/theme/css/main.css" type="text/css" />
+		
+
+    <link href="https://alexkimxyz.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Alex Kim's Blog Atom Feed" />
+</head>
+	
+<body>
+
+    <div class="container">
+	  
+	  <header role="banner">
+	    <div class="feeds">
+	        <a href="https://alexkimxyz.github.io/feeds/all.atom.xml" rel="alternate"><img src="https://alexkimxyz.github.io/theme/images/icons/feed-32px.png" alt="atom feed"/></a>
+	    </div>
+		<a href="https://alexkimxyz.github.io" class="title">Alex Kim's Blog</a>
+      </header>
+	
+	  <div class="wrapper">
+
+		  <div role="main" class="content">
+	<article class="full">
+			
+		<h1>Set up Data Science workflow on AWS using EFS and EC2</h1>
+		
+<div class="metadata">
+  <time datetime="2018-12-21T00:00:00-05:00" pubdate>Fri 21 December 2018</time>
+    <address class="vcard author">
+      by <a class="url fn" href="https://alexkimxyz.github.io/author/alex-kim.html">Alex Kim</a>
+    </address>
+  in <a href="https://alexkimxyz.github.io/category/posts.html">posts</a>
+<p class="tags">tagged <a href="https://alexkimxyz.github.io/tag/aws.html">aws</a>, <a href="https://alexkimxyz.github.io/tag/experiments.html">experiments</a>, <a href="https://alexkimxyz.github.io/tag/setup.html">setup</a>, <a href="https://alexkimxyz.github.io/tag/workflow.html">workflow</a></p></div>		
+		<h2>What is this tutorial about?</h2>
+<p>This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control.
+It assumes you are familiar (at least at a high-level) with AWS services such as EC2, EBS, EFS and VPC.
+If not, I'd recommend you read up on what each of these services does and come back to this tutorial later.
+The instruction steps are essentially a sequence of bash commands that you would copy-paste into your terminal.</p>
+<h2>What is the end result?</h2>
+<p>After following these instructions, you will have:</p>
+<ul>
+<li>One (or more depending on your needs) EC2 instance that is configured to your project's needs</li>
+<li>An EFS filesystem mounted to your EC2 instances for storing your data</li>
+<li>A VPC and a subnet that allows the above things to talk to each other while keeping everything secure</li>
+</ul>
+<h2>What I like about it?</h2>
+<p>This setup keeps the data (on EFS) separate from the computing resources (on EC2), thus allowing me to:</p>
+<ul>
+<li>Test different ideas (Deep Learning architectures, sets of hyperparameters, etc.) in parallel using separate EC2 instances</li>
+<li>Keep my AWS bill from growing out of proportion to my usage</li>
+</ul>
+<p>I consider this approach to be a lot more flexible and cost-efficient compared to spinning up an EC2 instance with a large EBS volume for storing your data for the following reasons:</p>
+<ul>
+<li>While EBS price ($0.10/GB/month) is lower than that of EFS ($0.30/GB/month), they have different a pricing structure. You will be paying for the former by the amount of storage you provision which means you need to know in advance how much storage you will need for you project. It is possible to increase the size of your EBS mount later, but it is not very convenient. EFS, however, allows you to store as much data as you need on the pay-as-you-go basis</li>
+<li>Due to built-in redundancy, there is a much lower risk of losing your data when it is stored on EFS compared to EBS</li>
+<li>More importantly, unlike EBS mounts, EFS, being essentially AWS' implementation of the NFS protocol, has virtually no upper limit on how many EC2 instances it can be mounted to. This makes it a decent choice for either 1) quickly iterating through your ideas by running them in parallel on multiple EC2 instances or 2) collaborating with multiple people on a project that requires them having access to the same large dataset without the need to duplicate it</li>
+</ul>
+<h2>Instructions</h2>
+<ol>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#aws-setup">General AWS setup</a></li>
+<li><a href="#ec2commands">Configure first EC2 instance</a></li>
+<li><a href="#more-instances">Create more instances</a></li>
+</ol>
+<p><a name="prerequisites"></a></p>
+<h3>1. Prerequisites</h3>
+<ul>
+<li>
+<p>EC2 key-pair stored somewhere on your machine (typically in <code>~/.ssh/</code>):</p>
+<ul>
+<li>If not, see: <a href="https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html">https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html</a></li>
+</ul>
+</li>
+<li>
+<p>AWS Command Line Interface installed and configured on your local machine:</p>
+<ul>
+<li>If not, see: <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html">https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html</a></li>
+<li>Output format of <code>aws cli</code> needs to be set to <code>text</code> (the choice of the region name is up to you):</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre><span></span>aws configure
+&gt; AWS Access Key ID <span class="o">[</span>****************BLAH<span class="o">]</span>:
+&gt; AWS Secret Access Key <span class="o">[</span>****************abcd<span class="o">]</span>:
+&gt; Default region name <span class="o">[</span>us-east-1<span class="o">]</span>:
+&gt; Default output format <span class="o">[</span>json<span class="o">]</span>: text
+</pre></div>
+
+
+<p><a name="aws-setup"></a></p>
+<h3>2. General AWS setup</h3>
+<ul>
+<li>Set environment variables, including IPv4 network range for the VPC (<code>cidr_block</code>) and the base image (<code>base_ami_id</code>). Feel free to change to your desired values. Here I am using an Ubuntu AMI that already has all CUDA-related stuff preinstalled which might be handy if you are planning on training Deep Learning models.</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">my_aws_keyname</span><span class="o">=</span><span class="s2">&quot;my_aws_keyname&quot;</span>
+<span class="nb">export</span> <span class="nv">my_aws_key</span><span class="o">=</span><span class="s2">&quot;~/.ssh/my_aws_keyname.pem&quot;</span>
+<span class="nb">export</span> <span class="nv">cidr_block</span><span class="o">=</span><span class="s2">&quot;10.0.0.0/28&quot;</span>
+<span class="nb">export</span> <span class="nv">instance_type</span><span class="o">=</span><span class="s2">&quot;t3.medium&quot;</span> <span class="c1"># e.g. use &quot;p2.xlarge&quot; for an instance with a GPU</span>
+<span class="nb">export</span> <span class="nv">base_ami_id</span><span class="o">=</span><span class="s2">&quot;ami-03a935aafa6b52b97&quot;</span> <span class="c1"># e.g. use &quot;ami-0af8dc9d28a9aed78&quot; for an AMI with CUDA drivers</span>
+<span class="nb">export</span> <span class="nv">instance_key</span><span class="o">=</span><span class="s2">&quot;MyInstanceKey&quot;</span>
+<span class="nb">export</span> <span class="nv">instance_value</span><span class="o">=</span><span class="s2">&quot;MyInstanceValue&quot;</span>
+<span class="nb">export</span> <span class="nv">sg_name</span><span class="o">=</span><span class="s2">&quot;MySecurityGroup&quot;</span>
+<span class="nb">export</span> <span class="nv">subnet_name</span><span class="o">=</span><span class="s2">&quot;MySubnet&quot;</span>
+<span class="nb">export</span> <span class="nv">my_vpc_key</span><span class="o">=</span><span class="s2">&quot;MyVpcKey&quot;</span>
+<span class="nb">export</span> <span class="nv">my_vpc_name</span><span class="o">=</span><span class="s2">&quot;MyVPC&quot;</span>
+<span class="nb">export</span> <span class="nv">my_ami_name</span><span class="o">=</span><span class="s2">&quot;MyAmiName&quot;</span>
+</pre></div>
+
+
+<ul>
+<li>Create and name your VPC:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">vpc_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 create-vpc --cidr-block <span class="nv">$cidr_block</span> --query <span class="s2">&quot;Vpc.VpcId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;VPN id: </span><span class="nv">$vpc_id</span><span class="s2">&quot;</span>
+aws ec2 modify-vpc-attribute --vpc-id <span class="nv">$vpc_id</span> --enable-dns-hostnames
+aws ec2 create-tags --resources <span class="nv">$vpc_id</span>  --tags <span class="nv">Key</span><span class="o">=</span><span class="nv">$my_vpc_key</span>,Value<span class="o">=</span><span class="nv">$my_vpc_name</span>
+</pre></div>
+
+
+<ul>
+<li>Create an Internet Gateway, a Route Table and a Subnet:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># Internet Gateway</span>
+<span class="nb">export</span> <span class="nv">igw_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 create-internet-gateway --query <span class="s2">&quot;InternetGateway.InternetGatewayId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;IGW id: </span><span class="nv">$igw_id</span><span class="s2">&quot;</span>
+aws ec2 attach-internet-gateway --internet-gateway-id <span class="nv">$igw_id</span> --vpc-id <span class="nv">$vpc_id</span>
+<span class="c1"># Route Table</span>
+<span class="nb">export</span> <span class="nv">rt_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 describe-route-tables --filters <span class="s2">&quot;Name=vpc-id,Values=</span><span class="nv">$vpc_id</span><span class="s2">&quot;</span> <span class="se">\</span>
+--query <span class="s2">&quot;RouteTables[].RouteTableId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;Route Table id: </span><span class="nv">$rt_id</span><span class="s2">&quot;</span>
+aws ec2 create-route --route-table-id <span class="nv">$rt_id</span> --gateway-id <span class="nv">$igw_id</span> --destination-cidr-block <span class="m">0</span>.0.0.0/0
+<span class="c1"># Subnet</span>
+<span class="nb">export</span> <span class="nv">subnet_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 create-subnet --vpc-id <span class="nv">$vpc_id</span> --cidr-block <span class="nv">$cidr_block</span> <span class="se">\</span>
+--availability-zone us-east-1a  --query <span class="s2">&quot;Subnet.SubnetId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;Subnet id: </span><span class="nv">$subnet_id</span><span class="s2">&quot;</span>
+aws ec2 create-tags --resources <span class="nv">$subnet_id</span>  --tags <span class="s2">&quot;Key=Name,Value=</span><span class="nv">$subnet_name</span><span class="s2">&quot;</span>
+aws ec2 associate-route-table --route-table-id <span class="nv">$rt_id</span> --subnet-id <span class="nv">$subnet_id</span>
+</pre></div>
+
+
+<ul>
+<li>Create and configure a Security Group:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">sg_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 create-security-group --vpc-id <span class="nv">$vpc_id</span> <span class="se">\</span>
+--group-name <span class="nv">$sg_name</span> --description <span class="s2">&quot;My Security Group&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;Security Group id: </span><span class="nv">$sg_id</span><span class="s2">&quot;</span>
+aws ec2 authorize-security-group-ingress --group-id <span class="nv">$sg_id</span> --protocol tcp <span class="se">\</span>
+--port <span class="m">22</span> --cidr <span class="k">$(</span>curl https://checkip.amazonaws.com<span class="k">)</span>/32
+aws ec2 authorize-security-group-ingress --group-id <span class="nv">$sg_id</span> --protocol tcp <span class="se">\</span>
+--port <span class="m">8889</span> --cidr <span class="k">$(</span>curl https://checkip.amazonaws.com<span class="k">)</span>/32
+aws ec2 authorize-security-group-ingress --group-id <span class="nv">$sg_id</span> --protocol tcp <span class="se">\</span>
+--port <span class="m">2049</span> --cidr <span class="nv">$cidr_block</span>
+</pre></div>
+
+
+<ul>
+<li>Create an EFS storage</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">efs_id</span><span class="o">=</span><span class="k">$(</span>aws efs create-file-system --creation-token <span class="s2">&quot;efs_token&quot;</span> --query <span class="s2">&quot;FileSystemId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;EFS id: </span><span class="nv">$efs_id</span><span class="s2">&quot;</span>
+</pre></div>
+
+
+<p>You need to wait for a bit (5-10 s) after running this command for the EFS to fully initialize.</p>
+<ul>
+<li>Associate your EFS with your subnet and security group:</li>
+</ul>
+<div class="highlight"><pre><span></span>aws efs create-mount-target --file-system-id <span class="nv">$efs_id</span> --subnet-id <span class="nv">$subnet_id</span> --security-groups <span class="nv">$sg_id</span>
+</pre></div>
+
+
+<ul>
+<li>Create your first EC2 instance (feel free to change <code>VolumeSize</code> to your desired value in GB):</li>
+</ul>
+<div class="highlight"><pre><span></span>aws ec2 run-instances --image-id <span class="nv">$base_ami_id</span> --count <span class="m">1</span> --instance-type <span class="s2">&quot;</span><span class="nv">$instance_type</span><span class="s2">&quot;</span> <span class="se">\</span>
+--block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=55}&quot;</span> --associate-public-ip-address <span class="se">\</span>
+--key-name <span class="nv">$my_aws_keyname</span> --subnet-id <span class="nv">$subnet_id</span> --security-group-ids <span class="nv">$sg_id</span> <span class="se">\</span>
+--tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=</span><span class="nv">$instance_key</span><span class="s2">,Value=</span><span class="nv">$instance_value</span><span class="s2">}]&quot;</span>
+</pre></div>
+
+
+<p>Wait another 15-20 s for the instance to initialize.</p>
+<ul>
+<li>Get the instance's id and ip values:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ec2_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag:</span><span class="nv">$instance_key</span><span class="s2">,Values=</span><span class="nv">$instance_value</span><span class="s2">&quot;</span> <span class="se">\</span>
+--query <span class="s2">&quot;Reservations[].Instances[].InstanceId&quot;</span> --output text<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;EC2 id: </span><span class="nv">$ec2_id</span><span class="s2">&quot;</span>
+<span class="nb">export</span> <span class="nv">ec2_ip</span><span class="o">=</span><span class="k">$(</span>aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag:</span><span class="nv">$instance_key</span><span class="s2">,Values=</span><span class="nv">$instance_value</span><span class="s2">&quot;</span> <span class="se">\</span>
+--query <span class="s2">&quot;Reservations[].Instances[].PublicIpAddress&quot;</span> --output text<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;EC2 ip: </span><span class="nv">$ec2_ip</span><span class="s2">&quot;</span>
+</pre></div>
+
+
+<ul>
+<li>Optionally, tag your instance (change <code>datascience_instance</code> to whatever you want):</li>
+</ul>
+<div class="highlight"><pre><span></span>aws ec2 create-tags --resources <span class="nv">$ec2_id</span> --tag <span class="s2">&quot;Key=Name,Value=datascience_instance&quot;</span>
+</pre></div>
+
+
+<ul>
+<li>Export EFS id to the instance:</li>
+</ul>
+<div class="highlight"><pre><span></span>ssh -i <span class="nv">$my_aws_key</span> ubuntu@<span class="nv">$ec2_ip</span> <span class="s2">&quot;echo export efs_id=</span><span class="nv">$efs_id</span><span class="s2"> &gt;&gt; ~/.bashrc&quot;</span>
+</pre></div>
+
+
+<p><a name="ec2commands"></a></p>
+<h3>3. Configure first EC2 instance</h3>
+<ul>
+<li>SSH into the instance:</li>
+</ul>
+<div class="highlight"><pre><span></span>ssh -i <span class="nv">$my_aws_key</span> ubuntu@<span class="nv">$ec2_ip</span>
+</pre></div>
+
+
+<ul>
+<li>Update list of packages and upgrade Ubuntu packages:</li>
+</ul>
+<div class="highlight"><pre><span></span>sudo apt-get update -y
+sudo apt-get upgrade -y
+</pre></div>
+
+
+<ul>
+<li>Mount EFS to the instance:</li>
+</ul>
+<div class="highlight"><pre><span></span>mkdir ~/downloads <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ~/downloads
+sudo apt-get -y install binutils
+git clone https://github.com/aws/efs-utils <span class="o">&amp;&amp;</span> <span class="nb">cd</span> efs-utils/
+./build-deb.sh
+sudo apt-get -y install ./build/amazon-efs-utils*deb
+sudo mkdir /efs
+sudo mount -t efs <span class="nv">$efs_id</span> /efs
+sudo chown -R ubuntu /efs
+<span class="c1"># confirm that EFS was mounted to /efs</span>
+df -h
+<span class="c1"># optionally create test file</span>
+<span class="nb">echo</span> <span class="s2">&quot;test&quot;</span> &gt; /efs/testfile
+</pre></div>
+
+
+<ul>
+<li>Edit fstab so that EFS get mounted after a restart</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;</span><span class="nv">$efs_id</span><span class="s2">:/ /efs efs defaults,_netdev 0 0&quot;</span> <span class="p">|</span> sudo tee -a /etc/fstab
+</pre></div>
+
+
+<ul>
+<li>Optionally, install whatever software you want all your future instances to have by default. If you chose a GPU instance earlier and plan to experiment with Deep Learning libraries, you might want to install the following:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="c1"># link cuda drivers</span>
+sudo ln -sfn /usr/local/cuda-9.2 /usr/local/cuda
+<span class="c1"># Install Anaconda Python</span>
+<span class="nb">cd</span> ~/downloads
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+<span class="nb">unset</span> PYTHONPATH
+bash Miniconda3-latest-Linux-x86_64.sh -b
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;/home/ubuntu/miniconda3/bin:</span><span class="nv">$PATH</span><span class="s2">&quot;</span>
+<span class="nb">echo</span> <span class="s1">&#39;PATH=&quot;/home/ubuntu/miniconda3/bin:$PATH&quot;&#39;</span> &gt;&gt; ~/.bashrc
+<span class="c1"># Install Deep Learning libraries</span>
+conda install -y -c anaconda keras-gpu
+conda install -y -c pytorch pytorch
+...
+</pre></div>
+
+
+<ul>
+<li>Exit the instance</li>
+<li>Create AMI:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">my_ami_id</span><span class="o">=</span><span class="k">$(</span>aws ec2 create-image --instance-id <span class="nv">$ec2_id</span> --name <span class="nv">$my_ami_name</span> --query <span class="s2">&quot;ImageId&quot;</span><span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;My AMI id: </span><span class="nv">$my_ami_id</span><span class="s2">&quot;</span>
+</pre></div>
+
+
+<p>This will take several minutes to complete.
+<a name="more-instances"></a></p>
+<h3>4. Create more instances</h3>
+<p>If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
+- Set environment variables:</p>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">new_instance_type</span><span class="o">=</span><span class="s2">&quot;t3.small&quot;</span>
+<span class="nb">export</span> <span class="nv">new_instance_key</span><span class="o">=</span><span class="s2">&quot;MyInstanceKey2&quot;</span>
+<span class="nb">export</span> <span class="nv">new_instance_value</span><span class="o">=</span><span class="s2">&quot;MyInstanceValue2&quot;</span>
+</pre></div>
+
+
+<ul>
+<li>Create new instance:</li>
+</ul>
+<div class="highlight"><pre><span></span>aws ec2 run-instances --image-id <span class="nv">$my_ami_id</span> --count <span class="m">1</span> --instance-type <span class="s2">&quot;</span><span class="nv">$new_instance_type</span><span class="s2">&quot;</span> <span class="se">\</span>
+--block-device-mapping <span class="s2">&quot;DeviceName=/dev/sda1,Ebs={VolumeSize=55}&quot;</span> --associate-public-ip-address <span class="se">\</span>
+--key-name <span class="nv">$my_aws_keyname</span> --subnet-id <span class="nv">$subnet_id</span> --security-group-ids <span class="nv">$sg_id</span> <span class="se">\</span>
+--tag-specifications <span class="s2">&quot;ResourceType=instance,Tags=[{Key=</span><span class="nv">$new_instance_key</span><span class="s2">,Value=</span><span class="nv">$new_instance_value</span><span class="s2">}]&quot;</span> 
+</pre></div>
+
+
+<ul>
+<li>Get new instance's id and ip:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">ec2_id_2</span><span class="o">=</span><span class="k">$(</span>aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag:</span><span class="nv">$new_instance_key</span><span class="s2">,Values=</span><span class="nv">$new_instance_value</span><span class="s2">&quot;</span> <span class="se">\</span>
+--query <span class="s2">&quot;Reservations[].Instances[].InstanceId&quot;</span> --output text<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;New instance id: </span><span class="nv">$ec2_id_2</span><span class="s2">&quot;</span>
+<span class="nb">export</span> <span class="nv">ec2_ip_2</span><span class="o">=</span><span class="k">$(</span>aws ec2 describe-instances --filters <span class="s2">&quot;Name=tag:</span><span class="nv">$new_instance_key</span><span class="s2">,Values=</span><span class="nv">$new_instance_value</span><span class="s2">&quot;</span> <span class="se">\</span>
+--query <span class="s2">&quot;Reservations[].Instances[].PublicIpAddress&quot;</span> --output text<span class="k">)</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="s2">&quot;New instance ip: </span><span class="nv">$ec2_ip_2</span><span class="s2">&quot;</span>
+</pre></div>
+
+
+<ul>
+<li>Name the instance:</li>
+</ul>
+<div class="highlight"><pre><span></span>aws ec2 create-tags --resources <span class="nv">$ec2_id_2</span> --tag <span class="s2">&quot;Key=Name,Value=datascience_instance_2&quot;</span>
+</pre></div>	
+
+	</article>
+
+    <p>
+	<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-via="" data-lang="en" data-size="large" data-related="">Tweet</a> -->
+	<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+	</p>
+
+
+		  </div>	
+		  
+		  <div class="sidebar">
+
+	        <nav>
+	          <h2>Categories</h2>
+	          <ul>
+	              <li class="active"><a href="https://alexkimxyz.github.io/category/posts.html">posts</a></li>
+	          </ul>
+	        </nav>
+
+	          <aside>
+	          <h2>Social</h2>
+			    <ul class="social">
+				  <li><a href="https://www.linkedin.com/in/alexkimxyz">LinkedIn</a><i></i></li>
+				  <li><a href="https://www.github.com/alexkimxyz">Github</a><i></i></li>
+				  <li><a href="https://www.twitter.com/alexkimxyz">Twitter</a><i></i></li>
+			    </ul>
+			  </aside>
+
+
+		  </div>
+
+	  </div>
+
+      <footer>
+		<!--<p role="contentinfo">
+		  © 2013 Alexander Kim - Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>. Theme <a href="https://github.com/fle/pelican-simplegrey">pelican-simplegrey</a>.
+    	</p>-->
+
+	  </footer>	
+
+	</div>
+	
+
+</body>
+</html>

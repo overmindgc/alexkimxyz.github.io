@@ -29,8 +29,8 @@ AUTHOR_FEED_RSS = None
 # Social widget
 SOCIAL = (
 			('LinkedIn', 'https://www.linkedin.com/in/alexkimxyz'),
-			('Github', 'https://github.com/alexkimxyz'),
-			('Twitter', 'https://twitter.com/alexkimxyz'),
+			('Github', 'https://www.github.com/alexkimxyz'),
+			('Twitter', 'https://www.twitter.com/alexkimxyz'),
 		)
 
 DEFAULT_PAGINATION = 3
@@ -46,3 +46,6 @@ PLUGINS = ['ipynb.markup']
 # metadata. These need to be ignored. 
 IGNORE_FILES = [".ipynb_checkpoints"]  
 THEME = './theme/pelican-simplegrey'
+
+STATIC_PATHS = ['extra']
+EXTRA_PATH_METADATA = {'extra/favicon.ico': {'path': 'favicon.ico'}}
