@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>Alex Kim's Blog - posts</title><link href="https://alexkimxyz.github.io/" rel="alternate"></link><link href="https://alexkimxyz.github.io/feeds/posts.atom.xml" rel="self"></link><id>https://alexkimxyz.github.io/</id><updated>2019-02-15T00:00:00-05:00</updated><entry><title>Set up Data Science workflow on AWS using EFS and EC2</title><link href="https://alexkimxyz.github.io/aws-exp-setup.html" rel="alternate"></link><published>2019-02-15T00:00:00-05:00</published><updated>2019-02-15T00:00:00-05:00</updated><author><name>Alex Kim</name></author><id>tag:alexkimxyz.github.io,2019-02-15:/aws-exp-setup.html</id><summary type="html">&lt;h2&gt;What is this tutorial about?&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>Alex Kim's Blog - posts</title><link href="https://alexkimxyz.github.io/" rel="alternate"></link><link href="https://alexkimxyz.github.io/feeds/posts.atom.xml" rel="self"></link><id>https://alexkimxyz.github.io/</id><updated>2019-02-15T00:00:00-05:00</updated><entry><title>Deep Learning experiments in AWS</title><link href="https://alexkimxyz.github.io/aws-exp-setup.html" rel="alternate"></link><published>2019-02-15T00:00:00-05:00</published><updated>2019-02-15T00:00:00-05:00</updated><author><name>Alex Kim</name></author><id>tag:alexkimxyz.github.io,2019-02-15:/aws-exp-setup.html</id><summary type="html">&lt;h2&gt;What is this tutorial about?&lt;/h2&gt;
 &lt;p&gt;This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control.
 It assumes you are familiar (at least …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;What is this tutorial about?&lt;/h2&gt;
 &lt;p&gt;This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control.
 It assumes you are familiar (at least at a high-level) with AWS services such as EC2, EBS, EFS and VPC.
 If not, I'd recommend you read up on what each of these services does and come back to this tutorial later.
-The instruction steps are essentially a sequence of bash commands that you would copy-paste into your terminal.&lt;/p&gt;
+The steps below are essentially a sequence of bash commands that you would copy-paste into your terminal.
+While the instructions will work for any type of EC2 instance, experimenting with Deep Learning is where it really shines compared to, for example, a local desktop, mainly, because it allows you to scale your GPU capacity up or down depending on the project as well as provides access to an unlimited data storage.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="image" src="https://alexkimxyz.github.io/ec2_efs.png" title="EFS and multiple EC2 instances"&gt;
+&lt;font size="2"&gt;&lt;span style="color:grey"&gt;Source: https://www.researchgate.net/figure/Amazon-Elastic-File-System-from-Amazon-2016_fig5_305508410&lt;/span&gt;&lt;/font&gt;&lt;/p&gt;
 &lt;h2&gt;What is the end result?&lt;/h2&gt;
 &lt;p&gt;After following these instructions, you will have:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;One (or more depending on your needs) EC2 instance that is configured to your project's needs&lt;/li&gt;
+&lt;li&gt;One (or more if needed) EC2 instance that is configured to your project's requirements (e.g. with or without a GPU)&lt;/li&gt;
 &lt;li&gt;An EFS filesystem mounted to your EC2 instances for storing your data&lt;/li&gt;
 &lt;li&gt;A VPC and a subnet that allows the above things to talk to each other while keeping everything secure&lt;/li&gt;
 &lt;/ul&gt;
@@ -22,9 +25,10 @@ The instruction steps are essentially a sequence of bash commands that you would
 &lt;p&gt;I consider this approach to be a lot more flexible and cost-efficient compared to spinning up an EC2 instance with a large EBS volume for storing your data for the following reasons:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;While EBS price ($0.10/GB/month) is lower than that of EFS ($0.30/GB/month), they have different a pricing structure. You will be paying for the former by the amount of storage you provision which means you need to know in advance how much storage you will need for you project. It is possible to increase the size of your EBS mount later, but it is not very convenient. EFS, however, allows you to store as much data as you need on the pay-as-you-go basis&lt;/li&gt;
-&lt;li&gt;Due to built-in redundancy, there is a much lower risk of losing your data when it is stored on EFS compared to EBS&lt;/li&gt;
+&lt;li&gt;EFS has built-in redundancy: there is a much lower risk of losing your data when it is stored on EFS compared to EBS&lt;/li&gt;
 &lt;li&gt;More importantly, unlike EBS mounts, EFS, being essentially AWS' implementation of the NFS protocol, has virtually no upper limit on how many EC2 instances it can be mounted to. This makes it a decent choice for either 1) quickly iterating through your ideas by running them in parallel on multiple EC2 instances or 2) collaborating with multiple people on a project that requires them having access to the same large dataset without the need to duplicate it&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;However, it is worth noting that EFS does have higher latency compared to EBS, but the gains in flexibility, in my opinion, far outweigh the latency concerns.&lt;/p&gt;
 &lt;h2&gt;Instructions&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href="#prerequisites"&gt;Prerequisites&lt;/a&gt;&lt;/li&gt;
@@ -60,13 +64,13 @@ The instruction steps are essentially a sequence of bash commands that you would
 &lt;p&gt;&lt;a name="aws-setup"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;2. General AWS setup&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;Set environment variables, including IPv4 network range for the VPC (&lt;code&gt;cidr_block&lt;/code&gt;) and the base image (&lt;code&gt;base_ami_id&lt;/code&gt;). Feel free to change to your desired values.&lt;/li&gt;
+&lt;li&gt;Set environment variables, including IPv4 network range for the VPC (&lt;code&gt;cidr_block&lt;/code&gt;) and the base image (&lt;code&gt;base_ami_id&lt;/code&gt;). Feel free to change to your desired values. Here I am using a &lt;a href="https://aws.amazon.com/ec2/instance-types/p2/"&gt;&lt;code&gt;p2.xlarge&lt;/code&gt;&lt;/a&gt; instance with a &lt;a href="https://aws.amazon.com/marketplace/pp/B077GCZ4GR"&gt;&lt;code&gt;ami-0f9cf087c1f27d9b1&lt;/code&gt;&lt;/a&gt; (Ubuntu-based Deep Learning Base AMI)&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;my_aws_keyname&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;my_aws_keyname&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;my_aws_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;~/.ssh/my_aws_keyname.pem&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;cidr_block&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;10.0.0.0/28&amp;quot;&lt;/span&gt;
-&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;instance_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;t3.medium&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;# e.g. use &amp;quot;p2.xlarge&amp;quot; for an instance with a GPU&lt;/span&gt;
-&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;base_ami_id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;ami-03a935aafa6b52b97&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;# e.g. use &amp;quot;ami-0af8dc9d28a9aed78&amp;quot; for an AMI with CUDA drivers&lt;/span&gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;instance_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;p2.xlarge&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;# e.g. use &amp;quot;p3.2xlarge&amp;quot; for a more powerful GPU or &amp;quot;t3.medium&amp;quot; for an instance without a GPU&lt;/span&gt;
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;base_ami_id&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;ami-0f9cf087c1f27d9b1&amp;quot;&lt;/span&gt; &lt;span class="c1"&gt;# e.g. use &amp;quot;ami-03a935aafa6b52b97&amp;quot; for an AMI without CUDA drivers&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;instance_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;MyInstanceKey&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;instance_value&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;MyInstanceValue&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;sg_name&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;MySecurityGroup&amp;quot;&lt;/span&gt;
@@ -239,7 +243,7 @@ conda install -y -c pytorch pytorch
 
 &lt;p&gt;This will take several minutes to complete.
 &lt;a name="more-instances"&gt;&lt;/a&gt;&lt;/p&gt;
-&lt;h3&gt;4. Create more instances&lt;/h3&gt;
+&lt;h3&gt;4. Create more instances (repeat as many times as needed throughout the lifetime of your project)&lt;/h3&gt;
 &lt;p&gt;If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
 - Set environment variables:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;new_instance_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;t3.small&amp;quot;&lt;/span&gt;

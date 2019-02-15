@@ -1,4 +1,4 @@
-Title: Set up Data Science workflow on AWS using EFS and EC2
+Title: Deep Learning experiments in AWS
 Date: 2019-02-15
 Category: posts
 Tags: aws, experiments, setup, workflow
@@ -9,13 +9,17 @@ Author: Alex Kim
 This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control.
 It assumes you are familiar (at least at a high-level) with AWS services such as EC2, EBS, EFS and VPC.
 If not, I'd recommend you read up on what each of these services does and come back to this tutorial later.
-The instruction steps are essentially a sequence of bash commands that you would copy-paste into your terminal.
+The steps below are essentially a sequence of bash commands that you would copy-paste into your terminal.
+While the instructions will work for any type of EC2 instance, experimenting with Deep Learning is where it really shines compared to, for example, a local desktop, mainly, because it allows you to scale your GPU capacity up or down depending on the project as well as provides access to an unlimited data storage.
+
+![image]({attach}/images/ec2_efs.png "EFS and multiple EC2 instances")
+<font size="2"><span style="color:grey">Source: https://www.researchgate.net/figure/Amazon-Elastic-File-System-from-Amazon-2016_fig5_305508410</span></font>
 
 ## What is the end result?
 
 After following these instructions, you will have:
 
-- One (or more depending on your needs) EC2 instance that is configured to your project's needs
+- One (or more if needed) EC2 instance that is configured to your project's requirements (e.g. with or without a GPU)
 - An EFS filesystem mounted to your EC2 instances for storing your data
 - A VPC and a subnet that allows the above things to talk to each other while keeping everything secure
 
@@ -28,10 +32,10 @@ This setup keeps the data (on EFS) separate from the computing resources (on EC2
 I consider this approach to be a lot more flexible and cost-efficient compared to spinning up an EC2 instance with a large EBS volume for storing your data for the following reasons:
 
 - While EBS price ($0.10/GB/month) is lower than that of EFS ($0.30/GB/month), they have different a pricing structure. You will be paying for the former by the amount of storage you provision which means you need to know in advance how much storage you will need for you project. It is possible to increase the size of your EBS mount later, but it is not very convenient. EFS, however, allows you to store as much data as you need on the pay-as-you-go basis
-- Due to built-in redundancy, there is a much lower risk of losing your data when it is stored on EFS compared to EBS
+- EFS has built-in redundancy: there is a much lower risk of losing your data when it is stored on EFS compared to EBS
 - More importantly, unlike EBS mounts, EFS, being essentially AWS' implementation of the NFS protocol, has virtually no upper limit on how many EC2 instances it can be mounted to. This makes it a decent choice for either 1) quickly iterating through your ideas by running them in parallel on multiple EC2 instances or 2) collaborating with multiple people on a project that requires them having access to the same large dataset without the need to duplicate it
 
-
+However, it is worth noting that EFS does have higher latency compared to EBS, but the gains in flexibility, in my opinion, far outweigh the latency concerns.
 
 ## Instructions
 
@@ -61,13 +65,13 @@ aws configure
 <a name="aws-setup"></a>
 ### 2. General AWS setup
 
-- Set environment variables, including IPv4 network range for the VPC (`cidr_block`) and the base image (`base_ami_id`). Feel free to change to your desired values.
+- Set environment variables, including IPv4 network range for the VPC (`cidr_block`) and the base image (`base_ami_id`). Feel free to change to your desired values. Here I am using a [`p2.xlarge`](https://aws.amazon.com/ec2/instance-types/p2/) instance with a [`ami-0f9cf087c1f27d9b1`](https://aws.amazon.com/marketplace/pp/B077GCZ4GR) (Ubuntu-based Deep Learning Base AMI)
 ```bash
 export my_aws_keyname="my_aws_keyname"
 export my_aws_key="~/.ssh/my_aws_keyname.pem"
 export cidr_block="10.0.0.0/28"
-export instance_type="t3.medium" # e.g. use "p2.xlarge" for an instance with a GPU
-export base_ami_id="ami-03a935aafa6b52b97" # e.g. use "ami-0af8dc9d28a9aed78" for an AMI with CUDA drivers
+export instance_type="p2.xlarge" # e.g. use "p3.2xlarge" for a more powerful GPU or "t3.medium" for an instance without a GPU
+export base_ami_id="ami-0f9cf087c1f27d9b1" # e.g. use "ami-03a935aafa6b52b97" for an AMI without CUDA drivers
 export instance_key="MyInstanceKey"
 export instance_value="MyInstanceValue"
 export sg_name="MySecurityGroup"
@@ -206,7 +210,7 @@ export my_ami_id=$(aws ec2 create-image --instance-id $ec2_id --name $my_ami_nam
 ```
 This will take several minutes to complete.
 <a name="more-instances"></a>
-### 4. Create more instances
+### 4. Create more instances (repeat as many times as needed throughout the lifetime of your project)
 If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
 - Set environment variables:
 ```bash
