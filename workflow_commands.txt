@@ -2,9 +2,7 @@
 pelican content/ && pelican --listen
 
 # push to dev
-git st
 pelican content -s publishconf.py
-git st
 git add .
 git ci -m "update"
 git push
