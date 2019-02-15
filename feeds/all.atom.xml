@@ -60,7 +60,7 @@ The instruction steps are essentially a sequence of bash commands that you would
 &lt;p&gt;&lt;a name="aws-setup"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;2. General AWS setup&lt;/h3&gt;
 &lt;ul&gt;
-&lt;li&gt;Set environment variables, including IPv4 network range for the VPC (&lt;code&gt;cidr_block&lt;/code&gt;) and the base image (&lt;code&gt;base_ami_id&lt;/code&gt;). Feel free to change to your desired values. Here I am using an Ubuntu AMI that already has all CUDA-related stuff preinstalled which might be handy if you are planning on training Deep Learning models.&lt;/li&gt;
+&lt;li&gt;Set environment variables, including IPv4 network range for the VPC (&lt;code&gt;cidr_block&lt;/code&gt;) and the base image (&lt;code&gt;base_ami_id&lt;/code&gt;). Feel free to change to your desired values.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;my_aws_keyname&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;my_aws_keyname&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;my_aws_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;~/.ssh/my_aws_keyname.pem&amp;quot;&lt;/span&gt;
