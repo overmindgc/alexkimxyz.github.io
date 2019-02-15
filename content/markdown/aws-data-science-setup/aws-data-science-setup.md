@@ -61,7 +61,7 @@ aws configure
 <a name="aws-setup"></a>
 ### 2. General AWS setup
 
-- Set environment variables, including IPv4 network range for the VPC (`cidr_block`) and the base image (`base_ami_id`). Feel free to change to your desired values. Here I am using an Ubuntu AMI that already has all CUDA-related stuff preinstalled which might be handy if you are planning on training Deep Learning models.
+- Set environment variables, including IPv4 network range for the VPC (`cidr_block`) and the base image (`base_ami_id`). Feel free to change to your desired values.
 ```bash
 export my_aws_keyname="my_aws_keyname"
 export my_aws_key="~/.ssh/my_aws_keyname.pem"
