@@ -1,5 +1,5 @@
 Title: Set up Data Science workflow on AWS using EFS and EC2
-Date: 2018-12-21
+Date: 2019-02-15
 Category: posts
 Tags: aws, experiments, setup, workflow
 Slug: aws-exp-setup
