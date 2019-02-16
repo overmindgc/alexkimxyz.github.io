@@ -213,6 +213,7 @@ This will take several minutes to complete.
 <a name="more-instances"></a>
 ### 4. Create more instances (repeat as many times as needed throughout the lifetime of your project)
 If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
+
 - Set environment variables:
 ```bash
 export new_instance_type="t3.small"
@@ -255,6 +256,8 @@ python super_long_running_script.py; stop_instance
 ```
 The second `start_jupyter` and the third one `start_jupyterlab` will start `jupyter` or `jupyterlab`, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a `tmux` session.
 Then the last command `jupyterurl` will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.
+
+___
 
 Hope this helps!
 If you encounter an issue, feel free to report it [here](https://github.com/alexkimxyz/alexkimxyz.github.io/issues)

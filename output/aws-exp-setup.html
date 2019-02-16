@@ -285,8 +285,10 @@ conda install -y -c pytorch pytorch
 <p>This will take several minutes to complete.
 <a name="more-instances"></a></p>
 <h3>4. Create more instances (repeat as many times as needed throughout the lifetime of your project)</h3>
-<p>If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
-- Set environment variables:</p>
+<p>If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.</p>
+<ul>
+<li>Set environment variables:</li>
+</ul>
 <div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">new_instance_type</span><span class="o">=</span><span class="s2">&quot;t3.small&quot;</span>
 <span class="nb">export</span> <span class="nv">new_instance_key</span><span class="o">=</span><span class="s2">&quot;MyInstanceKey2&quot;</span>
 <span class="nb">export</span> <span class="nv">new_instance_value</span><span class="o">=</span><span class="s2">&quot;MyInstanceValue2&quot;</span>
@@ -341,6 +343,7 @@ conda install -y -c pytorch pytorch
 
 <p>The second <code>start_jupyter</code> and the third one <code>start_jupyterlab</code> will start <code>jupyter</code> or <code>jupyterlab</code>, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a <code>tmux</code> session.
 Then the last command <code>jupyterurl</code> will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.</p>
+<hr>
 <p>Hope this helps!
 If you encounter an issue, feel free to report it <a href="https://github.com/alexkimxyz/alexkimxyz.github.io/issues">here</a></p>
 <p>-Alex</p>	
