@@ -29,12 +29,13 @@ While the instructions will work for any type of EC2 instance, experimenting wit
 &lt;li&gt;More importantly, unlike EBS mounts, EFS, being essentially AWS' implementation of the NFS protocol, has virtually no upper limit on how many EC2 instances it can be mounted to. This makes it a decent choice for either 1) quickly iterating through your ideas by running them in parallel on multiple EC2 instances or 2) collaborating with multiple people on a project that requires them having access to the same large dataset without the need to duplicate it&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;However, it is worth noting that EFS does have higher latency compared to EBS, but the gains in flexibility, in my opinion, far outweigh the latency concerns.&lt;/p&gt;
-&lt;h2&gt;Instructions&lt;/h2&gt;
+&lt;h2&gt;Contents&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href="#prerequisites"&gt;Prerequisites&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#aws-setup"&gt;General AWS setup&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#ec2commands"&gt;Configure first EC2 instance&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href="#more-instances"&gt;Create more instances&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="#tips"&gt;Tips&lt;/a&gt;&lt;/li&gt;
 &lt;/ol&gt;
 &lt;p&gt;&lt;a name="prerequisites"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;1. Prerequisites&lt;/h3&gt;
@@ -276,4 +277,31 @@ conda install -y -c pytorch pytorch
 &lt;li&gt;Name the instance:&lt;/li&gt;
 &lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;aws ec2 create-tags --resources &lt;span class="nv"&gt;$ec2_id_2&lt;/span&gt; --tag &lt;span class="s2"&gt;&amp;quot;Key=Name,Value=datascience_instance_2&amp;quot;&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content><category term="aws"></category><category term="experiments"></category><category term="setup"></category><category term="workflow"></category></entry></feed>
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;a name="tips"&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;h3&gt;5. Tips&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;If you don't feel comfortable with &lt;code&gt;aws cli&lt;/code&gt; yet, try and identify the changes (creation/configuration of new AWS resources) on the AWS dashboard.&lt;/li&gt;
+&lt;li&gt;When &lt;a href="#ec2commands"&gt;configuring your first EC2 instance&lt;/a&gt;, try to install/configure everything you think you might need in other instances in the future. This will save you time when creating new instances from the saved AMI&lt;/li&gt;
+&lt;li&gt;If you have &lt;code&gt;jupyter&lt;/code&gt;, &lt;code&gt;jupyterlab&lt;/code&gt; and &lt;code&gt;aws cli&lt;/code&gt; installed, I recommend adding these aliases to your bash profile:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;alias&lt;/span&gt; &lt;span class="nv"&gt;stop_instance&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;aws ec2 stop-instances --instance-ids &lt;/span&gt;&lt;span class="k"&gt;$(&lt;/span&gt;wget -q -O - http://169.254.169.254/latest/meta-data/instance-id&lt;span class="k"&gt;)&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;alias&lt;/span&gt; &lt;span class="nv"&gt;start_jupyter&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;jupyter notebook --no-browser --ip=* --port=8889&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;alias&lt;/span&gt; &lt;span class="nv"&gt;start_jupyterlab&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;jupyter lab --no-browser --ip=* --port=8889&amp;quot;&lt;/span&gt;
+&lt;span class="nb"&gt;alias&lt;/span&gt; &lt;span class="nv"&gt;jupyterurl&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;jupyter notebook list | grep localhost | sed &amp;quot;&lt;/span&gt;s/localhost/&lt;span class="k"&gt;$(&lt;/span&gt;dig +short myip.opendns.com @resolver1.opendns.com&lt;span class="k"&gt;)&lt;/span&gt;/g&lt;span class="s2"&gt;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The first command &lt;code&gt;stop_instance&lt;/code&gt; will stop the instance from the inside (which will, obviously, log you out) and is useful if you need to start a long/overnight command and want to stop your instance as soon as the command is done running (or results in an error). E.g.:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;python super_long_running_script.py&lt;span class="p"&gt;;&lt;/span&gt; stop_instance
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;The second &lt;code&gt;start_jupyter&lt;/code&gt; and the third one &lt;code&gt;start_jupyterlab&lt;/code&gt; will start &lt;code&gt;jupyter&lt;/code&gt; or &lt;code&gt;jupyterlab&lt;/code&gt;, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a &lt;code&gt;tmux&lt;/code&gt; session.
+Then the last command &lt;code&gt;jupyterurl&lt;/code&gt; will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.&lt;/p&gt;
+&lt;p&gt;Hope this helps!
+If you encounter an issue, feel free to report it here:
+https://github.com/alexkimxyz/alexkimxyz.github.io/issues&lt;/p&gt;
+&lt;p&gt;-Alex&lt;/p&gt;</content><category term="aws"></category><category term="experiments"></category><category term="setup"></category><category term="workflow"></category></entry></feed>

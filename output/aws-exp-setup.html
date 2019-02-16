@@ -69,12 +69,13 @@ While the instructions will work for any type of EC2 instance, experimenting wit
 <li>More importantly, unlike EBS mounts, EFS, being essentially AWS' implementation of the NFS protocol, has virtually no upper limit on how many EC2 instances it can be mounted to. This makes it a decent choice for either 1) quickly iterating through your ideas by running them in parallel on multiple EC2 instances or 2) collaborating with multiple people on a project that requires them having access to the same large dataset without the need to duplicate it</li>
 </ul>
 <p>However, it is worth noting that EFS does have higher latency compared to EBS, but the gains in flexibility, in my opinion, far outweigh the latency concerns.</p>
-<h2>Instructions</h2>
+<h2>Contents</h2>
 <ol>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#aws-setup">General AWS setup</a></li>
 <li><a href="#ec2commands">Configure first EC2 instance</a></li>
 <li><a href="#more-instances">Create more instances</a></li>
+<li><a href="#tips">Tips</a></li>
 </ol>
 <p><a name="prerequisites"></a></p>
 <h3>1. Prerequisites</h3>
@@ -316,7 +317,34 @@ conda install -y -c pytorch pytorch
 <li>Name the instance:</li>
 </ul>
 <div class="highlight"><pre><span></span>aws ec2 create-tags --resources <span class="nv">$ec2_id_2</span> --tag <span class="s2">&quot;Key=Name,Value=datascience_instance_2&quot;</span>
-</pre></div>	
+</pre></div>
+
+
+<p><a name="tips"></a></p>
+<h3>5. Tips</h3>
+<ul>
+<li>If you don't feel comfortable with <code>aws cli</code> yet, try and identify the changes (creation/configuration of new AWS resources) on the AWS dashboard.</li>
+<li>When <a href="#ec2commands">configuring your first EC2 instance</a>, try to install/configure everything you think you might need in other instances in the future. This will save you time when creating new instances from the saved AMI</li>
+<li>If you have <code>jupyter</code>, <code>jupyterlab</code> and <code>aws cli</code> installed, I recommend adding these aliases to your bash profile:</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="nb">alias</span> <span class="nv">stop_instance</span><span class="o">=</span><span class="s2">&quot;aws ec2 stop-instances --instance-ids </span><span class="k">$(</span>wget -q -O - http://169.254.169.254/latest/meta-data/instance-id<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">alias</span> <span class="nv">start_jupyter</span><span class="o">=</span><span class="s2">&quot;jupyter notebook --no-browser --ip=* --port=8889&quot;</span>
+<span class="nb">alias</span> <span class="nv">start_jupyterlab</span><span class="o">=</span><span class="s2">&quot;jupyter lab --no-browser --ip=* --port=8889&quot;</span>
+<span class="nb">alias</span> <span class="nv">jupyterurl</span><span class="o">=</span><span class="s2">&quot;jupyter notebook list | grep localhost | sed &quot;</span>s/localhost/<span class="k">$(</span>dig +short myip.opendns.com @resolver1.opendns.com<span class="k">)</span>/g<span class="s2">&quot;&quot;</span>
+</pre></div>
+
+
+<p>The first command <code>stop_instance</code> will stop the instance from the inside (which will, obviously, log you out) and is useful if you need to start a long/overnight command and want to stop your instance as soon as the command is done running (or results in an error). E.g.:</p>
+<div class="highlight"><pre><span></span>python super_long_running_script.py<span class="p">;</span> stop_instance
+</pre></div>
+
+
+<p>The second <code>start_jupyter</code> and the third one <code>start_jupyterlab</code> will start <code>jupyter</code> or <code>jupyterlab</code>, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a <code>tmux</code> session.
+Then the last command <code>jupyterurl</code> will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.</p>
+<p>Hope this helps!
+If you encounter an issue, feel free to report it here:
+https://github.com/alexkimxyz/alexkimxyz.github.io/issues</p>
+<p>-Alex</p>	
 
 	</article>
 

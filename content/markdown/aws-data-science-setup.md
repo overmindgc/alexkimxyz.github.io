@@ -37,12 +37,13 @@ I consider this approach to be a lot more flexible and cost-efficient compared t
 
 However, it is worth noting that EFS does have higher latency compared to EBS, but the gains in flexibility, in my opinion, far outweigh the latency concerns.
 
-## Instructions
+## Contents
 
 1. [Prerequisites](#prerequisites)
 2. [General AWS setup](#aws-setup)
 3. [Configure first EC2 instance](#ec2commands)
 4. [Create more instances](#more-instances)
+5. [Tips](#tips)
 
 <a name="prerequisites"></a>
 ### 1. Prerequisites
@@ -236,3 +237,29 @@ export ec2_ip_2=$(aws ec2 describe-instances --filters "Name=tag:$new_instance_k
 ```bash
 aws ec2 create-tags --resources $ec2_id_2 --tag "Key=Name,Value=datascience_instance_2"
 ```
+
+<a name="tips"></a>
+### 5. Tips
+- If you don't feel comfortable with `aws cli` yet, try and identify the changes (creation/configuration of new AWS resources) on the AWS dashboard.
+- When [configuring your first EC2 instance](#ec2commands), try to install/configure everything you think you might need in other instances in the future. This will save you time when creating new instances from the saved AMI
+- If you have `jupyter`, `jupyterlab` and `aws cli` installed, I recommend adding these aliases to your bash profile:
+```bash
+alias stop_instance="aws ec2 stop-instances --instance-ids $(wget -q -O - http://169.254.169.254/latest/meta-data/instance-id)"
+alias start_jupyter="jupyter notebook --no-browser --ip=* --port=8889"
+alias start_jupyterlab="jupyter lab --no-browser --ip=* --port=8889"
+alias jupyterurl="jupyter notebook list | grep localhost | sed "s/localhost/$(dig +short myip.opendns.com @resolver1.opendns.com)/g""
+```
+The first command `stop_instance` will stop the instance from the inside (which will, obviously, log you out) and is useful if you need to start a long/overnight command and want to stop your instance as soon as the command is done running (or results in an error). E.g.:
+```bash
+python super_long_running_script.py; stop_instance
+```
+The second `start_jupyter` and the third one `start_jupyterlab` will start `jupyter` or `jupyterlab`, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a `tmux` session.
+Then the last command `jupyterurl` will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.
+
+Hope this helps!
+If you encounter an issue, feel free to report it here:
+https://github.com/alexkimxyz/alexkimxyz.github.io/issues
+
+-Alex
+
+
