@@ -257,8 +257,7 @@ The second `start_jupyter` and the third one `start_jupyterlab` will start `jupy
 Then the last command `jupyterurl` will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.
 
 Hope this helps!
-If you encounter an issue, feel free to report it here:
-https://github.com/alexkimxyz/alexkimxyz.github.io/issues
+If you encounter an issue, feel free to report it [here](https://github.com/alexkimxyz/alexkimxyz.github.io/issues)
 
 -Alex
 

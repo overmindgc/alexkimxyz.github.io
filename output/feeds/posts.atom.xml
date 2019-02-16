@@ -302,6 +302,5 @@ conda install -y -c pytorch pytorch
 &lt;p&gt;The second &lt;code&gt;start_jupyter&lt;/code&gt; and the third one &lt;code&gt;start_jupyterlab&lt;/code&gt; will start &lt;code&gt;jupyter&lt;/code&gt; or &lt;code&gt;jupyterlab&lt;/code&gt;, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a &lt;code&gt;tmux&lt;/code&gt; session.
 Then the last command &lt;code&gt;jupyterurl&lt;/code&gt; will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.&lt;/p&gt;
 &lt;p&gt;Hope this helps!
-If you encounter an issue, feel free to report it here:
-https://github.com/alexkimxyz/alexkimxyz.github.io/issues&lt;/p&gt;
+If you encounter an issue, feel free to report it &lt;a href="https://github.com/alexkimxyz/alexkimxyz.github.io/issues"&gt;here&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;-Alex&lt;/p&gt;</content><category term="aws"></category><category term="experiments"></category><category term="setup"></category><category term="workflow"></category></entry></feed>
