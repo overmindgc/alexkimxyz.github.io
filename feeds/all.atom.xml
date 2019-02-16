@@ -245,8 +245,10 @@ conda install -y -c pytorch pytorch
 &lt;p&gt;This will take several minutes to complete.
 &lt;a name="more-instances"&gt;&lt;/a&gt;&lt;/p&gt;
 &lt;h3&gt;4. Create more instances (repeat as many times as needed throughout the lifetime of your project)&lt;/h3&gt;
-&lt;p&gt;If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.
-- Set environment variables:&lt;/p&gt;
+&lt;p&gt;If, in the future, you need more instances (of the same or different type) that have access to the same EFS, you can achieve this by running the following commands.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Set environment variables:&lt;/li&gt;
+&lt;/ul&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;new_instance_type&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;t3.small&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;new_instance_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;MyInstanceKey2&amp;quot;&lt;/span&gt;
 &lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;new_instance_value&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;MyInstanceValue2&amp;quot;&lt;/span&gt;
@@ -301,6 +303,7 @@ conda install -y -c pytorch pytorch
 
 &lt;p&gt;The second &lt;code&gt;start_jupyter&lt;/code&gt; and the third one &lt;code&gt;start_jupyterlab&lt;/code&gt; will start &lt;code&gt;jupyter&lt;/code&gt; or &lt;code&gt;jupyterlab&lt;/code&gt;, respectively, in the background mode (no browser) on port 8889. I recommend doing this in a &lt;code&gt;tmux&lt;/code&gt; session.
 Then the last command &lt;code&gt;jupyterurl&lt;/code&gt; will print out a URL (that includes a secure token) for you to copy-paste into your browser and start coding.&lt;/p&gt;
+&lt;hr&gt;
 &lt;p&gt;Hope this helps!
 If you encounter an issue, feel free to report it &lt;a href="https://github.com/alexkimxyz/alexkimxyz.github.io/issues"&gt;here&lt;/a&gt;&lt;/p&gt;
 &lt;p&gt;-Alex&lt;/p&gt;</content><category term="aws"></category><category term="experiments"></category><category term="setup"></category><category term="workflow"></category></entry></feed>
