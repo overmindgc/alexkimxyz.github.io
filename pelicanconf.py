@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 
 AUTHOR = 'Alexander Kim'
-SITENAME = "Alex Kim's Blog"
+SITENAME = "Blog"
 SITEURL = 'https://alexkimxyz.github.io'
 
 PATH = 'content'
@@ -45,7 +45,7 @@ PLUGINS = ['ipynb.markup']
 # if you create jupyter files in the content dir, snapshots are saved with the same
 # metadata. These need to be ignored. 
 IGNORE_FILES = [".ipynb_checkpoints"]  
-THEME = './theme/pelican-simplegrey'
-
+#THEME = './theme/pelican-simplegrey'
+THEME = './theme/pelican-blue'
 STATIC_PATHS = ['extra']
 EXTRA_PATH_METADATA = {'extra/favicon.ico': {'path': 'favicon.ico'}}

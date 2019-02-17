@@ -1,47 +1,90 @@
 <!doctype html>
-<html lang="">	
+<html lang="en" itemscope itemtype="http://schema.org/Person">
 <head>
-	<meta charset="utf-8"/>
-	<title>Deep Learning experiments in AWS - Alex Kim's Blog</title>	
-	<meta name="author" content="Alexander Kim">
-	
+            <meta charset="utf-8">
+        <!-- Site Meta Data -->
+        <title>Deep Learning experiments in AWS</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="Alexander Kim">
 
-	<meta name="description" content="What is this tutorial about? This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control. It assumes you are familiar (at least …">
+        <link rel="shortcut icon" href="">
 
+        <!-- schema.org -->
+        <meta itemprop="name" content="Blog">
+        <meta itemprop="image" content="">
+        <meta itemprop="description" content="">
 
-	<link rel="top" href="#" /><link href='http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,300italic,400italic,600italic|Source+Code+Pro' rel='stylesheet' type='text/css'></link>
-	<link rel="stylesheet" href="https://alexkimxyz.github.io/theme/css/main.css" type="text/css" />
-		
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
+        <!-- Style Meta Data -->
+        <link rel="stylesheet" href="https://alexkimxyz.github.io/theme/css/style.css" type="text/css"/>
+        <link rel="stylesheet" href="https://alexkimxyz.github.io/theme/css/pygments.css" type="text/css"/>
 
-    <link href="https://alexkimxyz.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Alex Kim's Blog Atom Feed" />
+        <!-- Feed Meta Data -->
+            <link href="https://alexkimxyz.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate"
+                  title="Blog ATOM Feed"/>
+
+        <!-- Twitter Feed -->
+        <meta name="twitter:card" content="summary">
+        <meta name="twitter:site" content="">
+        <meta name="twitter:image" content="">
+
+    <meta name="twitter:creator" content="">
+    <meta name="twitter:url" content="https://alexkimxyz.github.io/aws-exp-setup.html">
+    <meta name="twitter:title" content="Blog ~ Deep Learning experiments in AWS">
+    <meta name="twitter:description" content="What is this tutorial about? This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control. It assumes you are familiar (at least …">
+
+    <!-- Facebook Meta Data -->
+    <meta property="og:title" content="Blog ~ Deep Learning experiments in AWS"/>
+    <meta property="og:description" content="What is this tutorial about? This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control. It assumes you are familiar (at least …"/>
+    <meta property="og:image" content=""/>
 </head>
-	
+
 <body>
+<!-- Sidebar -->
+<aside>
+    <!--<center><a href="https://alexkimxyz.github.io"><img id="avatar" src=""></a></center>-->
+    <h1>Blog</h1>
+    <br>
 
-    <div class="container">
-	  
-	  <header role="banner">
-	    <div class="feeds">
-	        <a href="https://alexkimxyz.github.io/feeds/all.atom.xml" rel="alternate"><img src="https://alexkimxyz.github.io/theme/images/icons/feed-32px.png" alt="atom feed"/></a>
-	    </div>
-		<a href="https://alexkimxyz.github.io" class="title">Alex Kim's Blog</a>
-      </header>
-	
-	  <div class="wrapper">
 
-		  <div role="main" class="content">
-	<article class="full">
-			
-		<h1>Deep Learning experiments in AWS</h1>
-		
-<div class="metadata">
-  <time datetime="2019-02-15T00:00:00-05:00" pubdate>Fri 15 February 2019</time>
-    <address class="vcard author">
-      by <a class="url fn" href="https://alexkimxyz.github.io/author/alex-kim.html">Alex Kim</a>
-    </address>
-  in <a href="https://alexkimxyz.github.io/category/posts.html">posts</a>
-<p class="tags">tagged <a href="https://alexkimxyz.github.io/tag/aws.html">aws</a>, <a href="https://alexkimxyz.github.io/tag/experiments.html">experiments</a>, <a href="https://alexkimxyz.github.io/tag/setup.html">setup</a>, <a href="https://alexkimxyz.github.io/tag/workflow.html">workflow</a></p></div>		
-		<h2>What is this tutorial about?</h2>
+    <nav class="nav">
+        <ul class="list-bare">
+
+
+                <li><a class="nav__link" href="https://alexkimxyz.github.io/">data science by day, sleeping by night</a></li>
+
+        </ul>
+    </nav>
+
+    <p class="social">
+                <a href="https://www.linkedin.com/in/alexkimxyz" target="_blank"><img
+                        src="https://alexkimxyz.github.io/theme/images/icons/linkedin.png"></a>
+                <a href="https://www.github.com/alexkimxyz" target="_blank"><img
+                        src="https://alexkimxyz.github.io/theme/images/icons/github.png"></a>
+                <a href="https://www.twitter.com/alexkimxyz" target="_blank"><img
+                        src="https://alexkimxyz.github.io/theme/images/icons/twitter.png"></a>
+            <a href="https://alexkimxyz.github.io/feeds/all.atom.xml" rel="alternate">
+                <img src="https://alexkimxyz.github.io/theme/images/icons/rss.png"></a>
+    </p>
+
+        <h2>Categories</h2>
+        <ul class="navbar">
+                <li class="active"><a
+                        href="https://alexkimxyz.github.io/category/posts.html">posts</a></li>
+        </ul>
+
+
+</aside>
+
+<!-- Content -->
+<article>
+    <section id="content">
+        <article>
+            <h2 class="post_title post_detail"><a href="https://alexkimxyz.github.io/aws-exp-setup.html" rel="bookmark"
+                                                  title="Permalink to Deep Learning experiments in AWS">Deep Learning experiments in AWS</a></h2>
+            <div class="entry-content blog-post">
+                <h2>What is this tutorial about?</h2>
 <p>This tutorial provides step-by-step instructions on how to set up a Data Science workflow in AWS that allows for easy experimentation, quick iteration through your ideas (e.g. various ML algorithms) while keeping the AWS bill under control.
 It assumes you are familiar (at least at a high-level) with AWS services such as EC2, EBS, EFS and VPC.
 If not, I'd recommend you read up on what each of these services does and come back to this tutorial later.
@@ -346,50 +389,61 @@ Then the last command <code>jupyterurl</code> will print out a URL (that include
 <hr>
 <p>Hope this helps!
 If you encounter an issue, feel free to report it <a href="https://github.com/alexkimxyz/alexkimxyz.github.io/issues">here</a></p>
-<p>-Alex</p>	
+<p>-Alex</p>
+            </div>
+            <div class="post_list">
+                <span>By </span>
+                <a href="https://alexkimxyz.github.io/author/alex-kim.html">@Alex Kim</a>
+                <span> in </span>
+                <span class="post_category"><a href="https://alexkimxyz.github.io/category/posts.html" rel="bookmark"
+                                               title="Permalink to posts">[ posts ]</a></span>
+                <span class="post_date">Fri 15 February 2019</span>
+                <div><span>Tags : </span>
+                            <span><a href="https://alexkimxyz.github.io/tag/aws.html">#aws, </a></span>
+                            <span><a href="https://alexkimxyz.github.io/tag/experiments.html">#experiments, </a></span>
+                            <span><a href="https://alexkimxyz.github.io/tag/setup.html">#setup, </a></span>
+                            <span><a href="https://alexkimxyz.github.io/tag/workflow.html">#workflow, </a></span>
+                </div>
 
-	</article>
+                <div class="entry-social">
+                    <span class="twitter"><a target="_blank" rel="nofollow"
+                                             onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=400,width=700');return false;"
+                                             title="Twitter"
+                                             href="https://twitter.com/share?url=https://alexkimxyz.github.io/aws-exp-setup.html&text=Deep Learning experiments in AWS&via="><img
+                            src="https://alexkimxyz.github.io/theme/images/icons/twitter-s.png"></a></span>
 
-    <p>
-	<!-- <a href="https://twitter.com/share" class="twitter-share-button" data-via="" data-lang="en" data-size="large" data-related="">Tweet</a> -->
-	<script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-	</p>
+                    <span class="gplus"><a target="_blank" title="Google +"
+                                           href="https://plus.google.com/share?url=https://alexkimxyz.github.io/aws-exp-setup.html&hl=fr"
+                                           rel="nofollow"
+                                           onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=450,width=650');return false;"><img
+                            src="https://alexkimxyz.github.io/theme/images/icons/google-s.png"></a></span>
 
+                    <span class="facebook"><a target="_blank" title="Facebook" rel="nofollow"
+                                              onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=500,width=700');return false;"
+                                              href="https://www.facebook.com/sharer.php?u=https://alexkimxyz.github.io/aws-exp-setup.html&t=Deep Learning experiments in AWS"><img
+                            src="https://alexkimxyz.github.io/theme/images/icons/facebook-s.png"></a></span>
 
-		  </div>	
-		  
-		  <div class="sidebar">
+                    <a target="_blank" title="Linkedin"
+                       href="https://www.linkedin.com/shareArticle?mini=true&url=https://alexkimxyz.github.io/aws-exp-setup.html&title=Deep Learning experiments in AWS"
+                       rel="nofollow"
+                       onclick="javascript:window.open(this.href, '', 'menubar=no,toolbar=no,resizable=yes,scrollbars=yes,height=450,width=650');return false;"><img
+                            src="https://alexkimxyz.github.io/theme/images/icons/linkedin-s.png"></a>
 
-	        <nav>
-	          <h2>Categories</h2>
-	          <ul>
-	              <li class="active"><a href="https://alexkimxyz.github.io/category/posts.html">posts</a></li>
-	          </ul>
-	        </nav>
+                    <span class="mail"><a
+                            href="mailto:?subject=Deep Learning experiments in AWS&amp;body=Viens découvrir un article à propos de [Deep Learning experiments in AWS] sur le site de Alexander Kim. https://alexkimxyz.github.io/aws-exp-setup.html"
+                            title="Share by Email" target="_blank"><img
+                            src="https://alexkimxyz.github.io/theme/images/icons/mail-s.png"></a></span>
+                </div>
+            </div>
+        </article>
+    </section>
+</article>
 
-	          <aside>
-	          <h2>Social</h2>
-			    <ul class="social">
-				  <li><a href="https://www.linkedin.com/in/alexkimxyz">LinkedIn</a><i></i></li>
-				  <li><a href="https://www.github.com/alexkimxyz">Github</a><i></i></li>
-				  <li><a href="https://www.twitter.com/alexkimxyz">Twitter</a><i></i></li>
-			    </ul>
-			  </aside>
+<!-- Footer -->
+    <footer>
+        
+    </footer>
 
-
-		  </div>
-
-	  </div>
-
-      <footer>
-		<!--<p role="contentinfo">
-		  © 2013 Alexander Kim - Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>. Theme <a href="https://github.com/fle/pelican-simplegrey">pelican-simplegrey</a>.
-    	</p>-->
-
-	  </footer>	
-
-	</div>
-	
 
 </body>
 </html>
